@@ -48,48 +48,56 @@ const Lobby = () => {
   }, [socket, handleJoinRoom]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 p-6 sm:p-8 md:p-10">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-4 py-8 sm:px-6 lg:px-8">
       <Toaster
         position="bottom-right"
         toastOptions={{
-          className: "bg-gray-800 text-gray-100",
+          className: "bg-white text-slate-800 shadow-lg",
           success: {
-            className: "bg-green-700 text-white",
-            iconTheme: { primary: "#fff", secondary: "#059669" }
+            className: "bg-emerald-50 text-emerald-800 border border-emerald-200",
+            iconTheme: { primary: "#059669", secondary: "#fff" }
           },
-          error: { className: "bg-red-700 text-white" }
+          error: { 
+            className: "bg-red-50 text-red-800 border border-red-200",
+            iconTheme: { primary: "#dc2626", secondary: "#fff" }
+          }
         }}
       />
 
-      <div className="w-full max-w-md md:max-w-lg lg:max-w-xl bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl p-8 sm:p-10 md:p-12 border border-gray-700/50 transition-all duration-300 hover:border-purple-500/30 hover:shadow-purple-500/10">
-        <header className="text-center space-y-5 md:space-y-6">
-          <div className="bg-gradient-to-br from-purple-500 to-pink-500 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-lg transition-transform hover:scale-105">
-            <Video className="w-9 h-9 text-white" aria-hidden="true" />
+      <div className="w-full max-w-md md:max-w-lg lg:max-w-xl bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 border border-slate-200 transition-all duration-300">
+        <header className="text-center space-y-6">
+          <div className="relative">
+            <div className="absolute inset-0 bg-blue-500/10 blur-2xl rounded-full"></div>
+            <div className="relative bg-gradient-to-b from-blue-600 to-blue-700 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-blue-500/25">
+              <Video className="w-10 h-10 text-white drop-shadow-lg" aria-hidden="true" />
+            </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Join Video Room
-          </h1>
-          <p className="text-gray-300/90 text-sm sm:text-base md:text-lg">
-            Collaborate seamlessly with crystal-clear video
-          </p>
+          <div className="space-y-3">
+            <h1 className="text-4xl sm:text-5xl font-bold text-slate-800">
+              Join Video Room
+            </h1>
+            <p className="text-slate-600 text-base sm:text-lg font-medium">
+              Connect and collaborate in real-time
+            </p>
+          </div>
         </header>
 
-        <form onSubmit={handleSubmitForm} className="mt-10 md:mt-12 space-y-7 md:space-y-8">
-          <div className="space-y-5 md:space-y-6">
+        <form onSubmit={handleSubmitForm} className="mt-12 space-y-8">
+          <div className="space-y-6">
             {/* Room ID Input Group */}
             <div className="space-y-3">
-              <label htmlFor="roomId" className="block text-sm md:text-base font-medium text-gray-300">
+              <label htmlFor="roomId" className="block text-base font-semibold text-slate-700">
                 Room ID
               </label>
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
+                <div className="relative flex-1 group">
                   <input
                     id="roomId"
                     type="text"
                     value={room}
                     onChange={(e) => setRoom(e.target.value)}
-                    className="w-full px-5 py-3.5 text-sm md:text-base rounded-xl bg-gray-800/70 border border-gray-600/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/30 text-gray-100 placeholder-gray-400 transition-all"
-                    placeholder="Paste room ID"
+                    className="w-full px-5 py-4 text-base rounded-xl bg-white border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 placeholder-slate-400 transition-all duration-300 hover:border-slate-400"
+                    placeholder="Enter or paste room ID"
                     autoComplete="off"
                     autoFocus
                   />
@@ -98,18 +106,18 @@ const Lobby = () => {
                   <button
                     type="button"
                     onClick={copyRoomIdToClipboard}
-                    className="px-4 py-3.5 bg-gray-700/50 hover:bg-gray-600/50 rounded-xl border border-gray-600/50 flex items-center justify-center transition-all hover:scale-105"
+                    className="p-4 bg-slate-100 hover:bg-slate-200 rounded-xl border border-slate-200 hover:border-slate-300 flex items-center justify-center transition-all duration-300 hover:scale-105 focus:ring-2 focus:ring-blue-500/20"
                     aria-label="Copy Room ID"
                   >
-                    <Copy className="w-5 h-5 md:w-6 md:h-6 text-gray-300" />
+                    <Copy className="w-6 h-6 text-slate-600" />
                   </button>
                   <button
                     type="button"
                     onClick={generateRoomId}
-                    className="px-4 py-3.5 bg-purple-600/70 hover:bg-purple-500/70 rounded-xl flex items-center justify-center transition-all hover:scale-105"
+                    className="p-4 bg-blue-600 hover:bg-blue-700 rounded-xl border border-blue-500 flex items-center justify-center transition-all duration-300 hover:scale-105 focus:ring-2 focus:ring-blue-500/20"
                     aria-label="Generate New Room ID"
                   >
-                    <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                    <Sparkles className="w-6 h-6 text-white" />
                   </button>
                 </div>
               </div>
@@ -117,19 +125,19 @@ const Lobby = () => {
 
             {/* Name Input Group */}
             <div className="space-y-3">
-              <label htmlFor="userName" className="block text-sm md:text-base font-medium text-gray-300">
+              <label htmlFor="userName" className="block text-base font-semibold text-slate-700">
                 Your Name
               </label>
-              <div className="relative">
-                <div className="absolute left-4 top-3.5 text-gray-400">
-                  <Users className="w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />
+              <div className="relative group">
+                <div className="absolute left-4 top-4 text-slate-400 transition-colors duration-300 group-hover:text-blue-500">
+                  <Users className="w-6 h-6" aria-hidden="true" />
                 </div>
                 <input
                   id="userName"
                   type="text"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-12 pr-5 py-3.5 text-sm md:text-base rounded-xl bg-gray-800/70 border border-gray-600/50 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/30 text-gray-100 placeholder-gray-400 transition-all"
+                  className="w-full pl-14 pr-5 py-4 text-base rounded-xl bg-white border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-slate-900 placeholder-slate-400 transition-all duration-300 hover:border-slate-400"
                   placeholder="Enter your display name"
                   autoComplete="off"
                 />
@@ -139,10 +147,10 @@ const Lobby = () => {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 text-sm md:text-base"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-xl font-semibold flex items-center justify-center gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg hover:shadow-blue-500/25 text-base"
           >
-            Join Now
-            <ArrowRight className="w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />
+            Join Video Room
+            <ArrowRight className="w-6 h-6" aria-hidden="true" />
           </button>
         </form>
       </div>
