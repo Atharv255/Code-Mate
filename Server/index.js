@@ -5,10 +5,21 @@ const cors = require("cors");
 const http = require("http");
 const path = require("path");
 app.use(express.json());
-app.use(cors());
+
+// Allow only your Vercel frontend
+const allowedOrigins = ['https://coding-sathi-mmm.vercel.app'];
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: true });
+const io = new Server(server, { 
+  cors: {
+    origin: allowedOrigins,
+    credentials: true
+  }
+});
 
 const emailToSocketIdMap = new Map();
 const socketidToEmailMap = new Map();
