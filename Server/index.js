@@ -7,7 +7,7 @@ const path = require("path");
 app.use(express.json());
 
 // Allow only your Vercel frontend
-const allowedOrigins = ['https://code-mate-beta.vercel.app'];
+const allowedOrigins = ['https://code-mate-psi.vercel.app'];
 app.use(cors({
   origin: allowedOrigins,
   credentials: true
