@@ -48,15 +48,21 @@ const RoomPage = () => {
   }, []);
 
   const handleCallUser = useCallback(async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
-    const offer = await peer.getOffer();
-    socket.emit("user:call", { to: remoteSocketId, offer, email });
-    setMyStream(stream);
-    setShowDialog(false);
-  }, [remoteSocketId, socket]);
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: true,
+    video: true,
+  });
+  setMyStream(stream);
+  setShowDialog(false);
+
+  const offer = await peer.getOffer();
+  socket.emit("user:call", { to: remoteSocketId, offer, email });
+
+  // Add your tracks to the peer connection here
+  for (const track of stream.getTracks()) {
+    peer.peer.addTrack(track, stream);
+  }
+}, [remoteSocketId, socket, email]);
 
   const handleIncommingCall = useCallback(
     async ({ from, offer, fromEmail }) => {
@@ -84,12 +90,13 @@ const RoomPage = () => {
   }, [myStream]);
 
   const handleCallAccepted = useCallback(
-    ({ from, ans }) => {
-      peer.setLocalDescription(ans);
-      console.log("Call Accepted!");
-    },
-    []
-  );
+  ({ from, ans }) => {
+    peer.setLocalDescription(ans);
+    console.log("Call Accepted!");
+    // sendStreams(); // <-- Keep this removed
+  },
+  []
+);
 
   const handleNegoNeeded = useCallback(async () => {
     const offer = await peer.getOffer();
