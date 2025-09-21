@@ -87,9 +87,8 @@ const RoomPage = () => {
     ({ from, ans }) => {
       peer.setLocalDescription(ans);
       console.log("Call Accepted!");
-      sendStreams();
     },
-    [sendStreams]
+    []
   );
 
   const handleNegoNeeded = useCallback(async () => {
