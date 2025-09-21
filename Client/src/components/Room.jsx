@@ -35,7 +35,6 @@ const RoomPage = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-
   const handleUserJoined = useCallback(({ email, id }) => {
     console.log(`Email ${email} joined room`, id);
     socket.emit("sync:code", { id, codeRef });
@@ -53,17 +52,11 @@ const RoomPage = () => {
       audio: true,
       video: true,
     });
-    setMyStream(stream);
-    setShowDialog(false);
-
-    // Add tracks only once here for the caller
-    for (const track of stream.getTracks()) {
-      peer.peer.addTrack(track, stream);
-    }
-
     const offer = await peer.getOffer();
     socket.emit("user:call", { to: remoteSocketId, offer, email });
-  }, [remoteSocketId, socket, email]);
+    setMyStream(stream);
+    setShowDialog(false);
+  }, [remoteSocketId, socket]);
 
   const handleIncommingCall = useCallback(
     async ({ from, offer, fromEmail }) => {
@@ -74,26 +67,29 @@ const RoomPage = () => {
         video: true,
       });
       setIncomingCall(true);
+      console.log(true);
       setMyStream(stream);
       setRemoteEmail(fromEmail);
+      console.log(`Incoming Call`, from, offer);
       const ans = await peer.getAnswer(offer);
       socket.emit("call:accepted", { to: from, ans });
-
-      // Add tracks only once here for the receiver
-      for (const track of stream.getTracks()) {
-        peer.peer.addTrack(track, stream);
-      }
     },
     [socket]
   );
+
+  const sendStreams = useCallback(() => {
+    for (const track of myStream.getTracks()) {
+      peer.peer.addTrack(track, myStream);
+    }
+  }, [myStream]);
 
   const handleCallAccepted = useCallback(
     ({ from, ans }) => {
       peer.setLocalDescription(ans);
       console.log("Call Accepted!");
-      // Do not call sendStreams here
+      sendStreams();
     },
-    []
+    [sendStreams]
   );
 
   const handleNegoNeeded = useCallback(async () => {
@@ -123,6 +119,7 @@ const RoomPage = () => {
   useEffect(() => {
     peer.peer.addEventListener("track", async (ev) => {
       const remoteStream = ev.streams;
+      console.log("GOT TRACKS!!");
       setRemoteStream(remoteStream[0]);
     });
   }, []);
@@ -137,6 +134,8 @@ const RoomPage = () => {
       toast(`${email} has left the room.`, {
         icon: "👋",
       });
+      console.log(`${email} has left the room.`);
+      // You can also reset state or perform other actions if necessary
       if (remoteSocketId) {
         setRemoteSocketId(null);
         setRemoteEmail(null);
@@ -163,13 +162,22 @@ const RoomPage = () => {
     handleNegoNeedFinal,
     remoteSocketId,
   ]);
-
+  // Automatically trigger sendStreams when incomingCall is true
+  useEffect(() => {
+    setTimeout(() => {
+      if (incomingCall) {
+        sendStreams();
+        setIncomingCall(false); // Reset incoming call to avoid repeated execution
+      }
+    }, 2000);
+  }, [incomingCall, sendStreams]);
   const toggleVideo = () => {
     if (myStream) {
       const videoTrack = myStream.getVideoTracks()[0];
       if (videoTrack) {
-        videoTrack.enabled = isVideoOff;
+        videoTrack.enabled = isVideoOff; // Toggle video track locally
       }
+      // Notify the remote peer of the video state change
       socket.emit("user:video:toggle", {
         to: remoteSocketId,
         isVideoOff: !isVideoOff,
@@ -179,16 +187,18 @@ const RoomPage = () => {
     setIsVideoOff(!isVideoOff);
   };
 
+  // Listen for video state changes
   useEffect(() => {
     socket.on("remote:video:toggle", ({ isVideoOff, email }) => {
       if (remoteEmail === email) {
+        // Update remote stream state or UI for the remote user
         setRemoteVideoOff(isVideoOff);
         setRemoteStream((prevStream) => {
-          const videoTrack = prevStream?.getVideoTracks()[0];
+          const videoTrack = prevStream.getVideoTracks()[0];
           if (videoTrack) {
-            videoTrack.enabled = !isVideoOff;
+            videoTrack.enabled = !isVideoOff; // Toggle remote video track
           }
-          return prevStream;
+          return prevStream; // Keep the current stream if video is enabled
         });
       }
     });
@@ -200,29 +210,18 @@ const RoomPage = () => {
       socket.off("wait:for:call");
     };
   }, [socket, remoteEmail]);
-
-  // Mic toggle: enable/disable audio track
-  const toggleMic = () => {
-    if (myStream) {
-      const audioTrack = myStream.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = isMuted;
-      }
-    }
-    setIsMuted(!isMuted);
-  };
-
   const handleLeaveRoom = () => {
     socket.emit("leave:room", { roomId, email });
     if (myStream) {
       myStream.getTracks().forEach((track) => track.stop());
       setMyStream(null);
     }
+
+    // Reset the state
     setRemoteSocketId(null);
     setRemoteEmail(null);
     setRemoteStream(null);
   };
-
   return (
     <div>
       <Toaster />
@@ -248,7 +247,7 @@ const RoomPage = () => {
                   {!isVideoOff ? (
                     <ReactPlayer
                       playing
-                      muted={true} // Always mute your own video
+                      muted={isMuted}
                       height="100%"
                       width="100%"
                       url={myStream}
@@ -267,12 +266,13 @@ const RoomPage = () => {
                 <div className="absolute top-4 left-4 bg-black/50 text-white px-2 py-1 rounded-md text-sm">
                   {remoteEmail}
                 </div>
+
                 {remoteStream && (
                   <>
                     {!remoteVideoOff ? (
                       <ReactPlayer
                         playing
-                        muted={false} // Always unmute remote video
+                        muted={isMuted}
                         height="100%"
                         width="100%"
                         url={remoteStream}
@@ -306,7 +306,7 @@ const RoomPage = () => {
                     ? "bg-red-50 text-red-500 border-red-200 hover:bg-red-100"
                     : "hover:bg-gray-100 border-gray-200"
                 }`}
-                onClick={toggleMic}
+                onClick={() => setIsMuted(!isMuted)}
               >
                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
